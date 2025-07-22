@@ -70,6 +70,12 @@
         modelViewer.src = glbSrc;
     }
 
+    window.history.replaceState(
+    {}, 
+    document.title, 
+    window.location.pathname
+  );
+
     let currentTextureScale = 1.0;
     // --- CACHING: Object to store our pre-created textures ---
     const textureCache = {};
