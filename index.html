@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
   <style>
-    /* Custom slider styling */
     #tiling-scale-slider::-webkit-slider-thumb {
       -webkit-appearance: none;
       appearance: none;
@@ -42,8 +41,7 @@
           View in your room
       </button>
   </model-viewer>
-  
-  <!-- Material Controls Section -->
+
   <div id="material-controls" style="padding: 16px; background-color: #f9f9f9; border-top: 1px solid #ddd; font-family: Arial, sans-serif;">
     <div style="display: flex; align-items: center; gap: 24px; flex-wrap: wrap;">
         <div style="display: flex; align-items: center; gap: 12px;">
@@ -77,7 +75,6 @@
   );
 
     let currentTextureScale = 1.0;
-    // --- CACHING: Object to store our pre-created textures ---
     const textureCache = {};
 
     const fabricSets = {
@@ -92,17 +89,13 @@
             color: './Carpet016_4K-PNG/Carpet016_4K-PNG_Color.png',
             normal: './Carpet016_4K-PNG/Carpet016_4K-PNG_NormalGL.png',
             roughness: './Carpet016_4K-PNG/Carpet016_4K-PNG_Roughness.png',
-            // --- FIX: Commented out the problematic AO map ---
-            // ao: './Carpet016_4K-PNG/Carpet016_4K-PNG_AmbientOcclusion.png'
         }
     };
 
-    // --- CACHING: This function now applies textures from the cache, making it instant ---
     function applyPBRTextureSet(material, cachedTextures) {
         if (cachedTextures.color) material.pbrMetallicRoughness.baseColorTexture.setTexture(cachedTextures.color);
         if (cachedTextures.normal) material.normalTexture.setTexture(cachedTextures.normal);
         if (cachedTextures.roughness) material.pbrMetallicRoughness.metallicRoughnessTexture.setTexture(cachedTextures.roughness);
-        // The AO texture will no longer be applied since it's removed from the cache logic
         if (cachedTextures.ao) material.occlusionTexture.setTexture(cachedTextures.ao);
         
         updateAllMaterialScales();
@@ -146,16 +139,12 @@
             fabricBtn.innerText = fabricSet.name;
             fabricBtn.style.cssText = `padding: 8px 14px; border: 2px solid #ddd; border-radius: 20px; background-color: #fff; cursor: pointer;`;
             
-            // --- CACHING: The onclick event is now much simpler ---
             fabricBtn.onclick = () => {
-                // Check if the textures for this button are in the cache
                 if (textureCache[key]) {
-                    // Instantly apply the cached textures to all materials
                     model.materials.forEach(material => {
                         applyPBRTextureSet(material, textureCache[key]);
                     });
 
-                    // Update button styles
                     fabricControls.querySelectorAll('button').forEach(btn => btn.style.borderColor = '#ddd');
                     fabricBtn.style.borderColor = '#007bff';
                 } else {
@@ -174,14 +163,12 @@
         }
     }
 
-    // --- CACHING: Main event listener now pre-loads and caches all textures ---
     modelViewer.addEventListener('load', async () => {
         const model = modelViewer.model;
         if (!model) return;
 
         console.log('Model loaded. Pre-caching all textures...');
         
-        // Loop through each fabric set and create its textures
         for (const key in fabricSets) {
             const textureSet = fabricSets[key];
             try {
@@ -189,11 +176,9 @@
                     modelViewer.createTexture(textureSet.color),
                     modelViewer.createTexture(textureSet.normal),
                     modelViewer.createTexture(textureSet.roughness),
-                    // This will now resolve to null for the carpet, preventing an error
                     textureSet.ao ? modelViewer.createTexture(textureSet.ao) : Promise.resolve(null)
                 ]);
                 
-                // Store the created textures in our cache
                 textureCache[key] = { color, normal, roughness, ao };
                 console.log(`Cached textures for: ${textureSet.name}`);
             } catch (error) {
@@ -203,21 +188,7 @@
         
         console.log('All textures cached.');
         
-        // Build the UI controls now that everything is ready
         addMaterialControls();
-
-        // Apply the first texture set by default from the cache
-        const firstKey = Object.keys(fabricSets)[0];
-        if (firstKey && textureCache[firstKey]) {
-            model.materials.forEach(material => {
-                applyPBRTextureSet(material, textureCache[firstKey]);
-            });
-            // Highlight the first button
-            const firstButton = document.querySelector('#fabric-controls button');
-            if (firstButton) {
-                firstButton.style.borderColor = '#007bff';
-            }
-        }
     }, { once: true });
 
   </script>
