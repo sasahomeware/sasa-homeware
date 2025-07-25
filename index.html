@@ -113,6 +113,8 @@
       id="main-viewer"
       ar
       ar-modes="webxr scene-viewer quick-look"
+      ar-scale="fixed"
+      interaction-policy="allow-when-focused"
       camera-controls
       disable-zoom
       max-camera-orbit="Infinity 90deg auto"
@@ -467,6 +469,15 @@
         console.log('Model loaded. Setting up material controls...');
         addMaterialControls();
     }, { once: true });
+
+    // Ensure AR scaling is disabled
+    modelViewer.addEventListener('ar-status', (event) => {
+        if (event.detail.status === 'session-started') {
+            console.log('AR session started - scaling locked');
+            // Additional AR scale locking if needed
+            modelViewer.scale = '1 1 1';
+        }
+    });
 
 
 
