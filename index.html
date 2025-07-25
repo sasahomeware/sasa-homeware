@@ -71,6 +71,44 @@
         display: block;
       }
     }
+    
+    /* Mobile responsive sizing for glass panel */
+    @media (max-width: 768px) {
+      #material-controls {
+        min-width: 25vw !important;
+        max-width: 25vw !important;
+        max-height: 30vh !important;
+        padding: 12px !important;
+        top: 15px !important;
+        right: 15px !important;
+      }
+      
+      #material-controls > div {
+        margin-bottom: 12px !important;
+      }
+      
+      #material-controls > div:last-child {
+        margin-bottom: 0 !important;
+      }
+      
+      #fabric-controls {
+        gap: 8px !important;
+      }
+      
+      #fabric-controls button {
+        width: 35px !important;
+        height: 35px !important;
+      }
+      
+      #material-controls span {
+        font-size: 12px !important;
+      }
+      
+      #ar-button {
+        padding: 10px 12px !important;
+        font-size: 12px !important;
+      }
+    }
   </style>
 </head>
 <body>
