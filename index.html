@@ -79,17 +79,16 @@
     );
 
     const fabricSets = {
+        'original': {
+            name: 'Original',
+            isOriginal: true, // Special flag for original material
+        },
         'leather': {
             name: 'Brown Leather',
             color: './Leather037_2K-PNG_Color.png',
             normal: './Leather037_2K-PNG_NormalGL.png',
             roughness: './Leather037_2K-PNG_Roughness.png',
-        },
-        'carpet': {
-            name: 'Carpet',
-            color: './Carpet016_4K-PNG/Carpet016_4K-PNG_Color.png',
-            normal: './Carpet016_4K-PNG/Carpet016_4K-PNG_NormalGL.png',
-            roughness: './Carpet016_4K-PNG/Carpet016_4K-PNG_Roughness.png',
+            swatch: './Leather037.png', // Better for small circular preview
         }
     };
 
@@ -127,6 +126,56 @@
     
     function updateTextureScale() { updateAllMaterialScales(); }
 
+
+
+    // Clear all applied textures to revert to original appearance
+    function restoreOriginalMaterials() {
+        const model = modelViewer.model;
+        if (!model) {
+            console.warn('No model available to restore');
+            return;
+        }
+        
+        console.log('Reverting to original materials by clearing applied textures...');
+        
+        try {
+            model.materials.forEach((material, index) => {
+                // Clear all applied custom textures to revert to original
+                if (material.pbrMetallicRoughness?.baseColorTexture) {
+                    material.pbrMetallicRoughness.baseColorTexture.setTexture(null);
+                }
+                
+                if (material.normalTexture) {
+                    material.normalTexture.setTexture(null);
+                }
+                
+                if (material.pbrMetallicRoughness?.metallicRoughnessTexture) {
+                    material.pbrMetallicRoughness.metallicRoughnessTexture.setTexture(null);
+                }
+                
+                if (material.occlusionTexture) {
+                    material.occlusionTexture.setTexture(null);
+                }
+                
+                console.log(`Cleared textures for material ${index}`);
+            });
+            
+            // Reset texture scale to original
+            currentTextureScale = 5.0;
+            const slider = document.getElementById('tiling-scale-slider');
+            if (slider) slider.value = '5.0';
+            
+            // Update scale display
+            const scaleDisplay = document.getElementById('texture-scale-display');
+            if (scaleDisplay) scaleDisplay.textContent = '5.0';
+            
+            console.log('Successfully reverted to original materials');
+            
+        } catch (error) {
+            console.error('Error reverting to original materials:', error);
+        }
+    }
+
     function addMaterialControls() {
         const model = modelViewer.model;
         if (!model) return;
@@ -134,7 +183,7 @@
         const fabricControls = document.getElementById('fabric-controls');
         fabricControls.innerHTML = '';
 
-        for (const key in fabricSets) {
+                for (const key in fabricSets) {
             const fabricSet = fabricSets[key];
             
             // Create material swatch container
@@ -143,19 +192,67 @@
             
             // Create circular swatch button
             const fabricSwatch = document.createElement('button');
-            fabricSwatch.style.cssText = `
-                width: 50px;
-                height: 50px;
-                border-radius: 50%;
-                border: 3px solid #ddd;
-                cursor: pointer;
-                background-image: url('${fabricSet.color}');
-                background-size: cover;
-                background-position: center;
-                background-repeat: no-repeat;
-                transition: border-color 0.2s ease, transform 0.1s ease;
-                outline: none;
-            `;
+            
+            if (fabricSet.isOriginal) {
+                // Special styling for original/default swatch
+                fabricSwatch.style.cssText = `
+                    width: 50px;
+                    height: 50px;
+                    border-radius: 50%;
+                    border: 3px solid #ddd;
+                    cursor: pointer;
+                    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%, #dee2e6 100%);
+                    transition: border-color 0.2s ease, transform 0.1s ease;
+                    outline: none;
+                    overflow: hidden;
+                    position: relative;
+                `;
+                
+                // Add a reset icon or text to indicate original
+                const originalIcon = document.createElement('div');
+                originalIcon.innerHTML = '↺';
+                originalIcon.style.cssText = `
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    font-size: 18px;
+                    color: #666;
+                    font-weight: bold;
+                `;
+                fabricSwatch.appendChild(originalIcon);
+            } else {
+                // Use dedicated swatch image if available, otherwise use color texture
+                const swatchImage = fabricSet.swatch || fabricSet.color;
+                
+                fabricSwatch.style.cssText = `
+                    width: 50px;
+                    height: 50px;
+                    border-radius: 50%;
+                    border: 3px solid #ddd;
+                    cursor: pointer;
+                    background-image: url('${swatchImage}');
+                    background-size: cover;
+                    background-position: center;
+                    background-repeat: no-repeat;
+                    transition: border-color 0.2s ease, transform 0.1s ease;
+                    outline: none;
+                    overflow: hidden;
+                `;
+                
+                // Ensure the texture image loads properly
+                const textureImg = new Image();
+                textureImg.onload = () => {
+                    console.log(`Swatch texture loaded for: ${fabricSet.name}`);
+                };
+                textureImg.onerror = () => {
+                    console.error(`Failed to load swatch texture for: ${fabricSet.name}`);
+                    // Fallback to a solid color if texture fails to load
+                    fabricSwatch.style.backgroundColor = key === 'leather' ? '#8B4513' : '#999';
+                    fabricSwatch.style.backgroundImage = 'none';
+                };
+                textureImg.src = swatchImage;
+            }
             
             // Add hover effect
             fabricSwatch.addEventListener('mouseenter', () => {
@@ -214,25 +311,34 @@
                 tooltip.style.opacity = '0';
             });
             
-            // Handle click to apply texture
+            // Handle click to apply texture or revert to original
             fabricSwatch.onclick = async () => {
                 try {
-                    console.log(`Loading textures for: ${fabricSet.name}`);
-                    
-                    // Load textures on-demand
-                    const [color, normal, roughness, ao] = await Promise.all([
-                        modelViewer.createTexture(fabricSet.color),
-                        modelViewer.createTexture(fabricSet.normal),
-                        modelViewer.createTexture(fabricSet.roughness),
-                        fabricSet.ao ? modelViewer.createTexture(fabricSet.ao) : Promise.resolve(null)
-                    ]);
-                    
-                    const textures = { color, normal, roughness, ao };
-                    
-                    // Apply to all materials
-                    model.materials.forEach(material => {
-                        applyPBRTextureSet(material, textures);
-                    });
+                    if (fabricSet.isOriginal) {
+                        // Revert to original materials without reloading
+                        console.log('Reverting to original material...');
+                        restoreOriginalMaterials();
+                        console.log('Reverted to original material');
+                    } else {
+                        console.log(`Loading textures for: ${fabricSet.name}`);
+                        
+                        // Load textures on-demand
+                        const [color, normal, roughness, ao] = await Promise.all([
+                            modelViewer.createTexture(fabricSet.color),
+                            modelViewer.createTexture(fabricSet.normal),
+                            modelViewer.createTexture(fabricSet.roughness),
+                            fabricSet.ao ? modelViewer.createTexture(fabricSet.ao) : Promise.resolve(null)
+                        ]);
+                        
+                        const textures = { color, normal, roughness, ao };
+                        
+                        // Apply to all materials
+                        model.materials.forEach(material => {
+                            applyPBRTextureSet(material, textures);
+                        });
+                        
+                        console.log(`Applied textures for: ${fabricSet.name}`);
+                    }
 
                     // Update swatch selection styles
                     fabricControls.querySelectorAll('button').forEach(btn => {
@@ -242,9 +348,8 @@
                     fabricSwatch.style.borderColor = '#007bff';
                     fabricSwatch.style.transform = 'scale(1)';
                     
-                    console.log(`Applied textures for: ${fabricSet.name}`);
                 } catch (error) {
-                    console.error(`Failed to load textures for ${fabricSet.name}:`, error);
+                    console.error(`Failed to process material ${fabricSet.name}:`, error);
                 }
             };
             
