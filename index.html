@@ -100,10 +100,6 @@
         height: 35px !important;
       }
       
-      #material-controls span {
-        font-size: 12px !important;
-      }
-      
       #ar-button {
         padding: 10px 12px !important;
         font-size: 12px !important;
@@ -148,31 +144,7 @@
         <div id="fabric-controls" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;"></div>
     </div>
     
-    <!-- Texture Scale Section -->
-    <div style="margin-bottom: 20px;">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-            <span style="font-size: 14px; font-weight: 600; color: rgba(0, 0, 0, 0.8);">Texture Scale</span>
-            <span id="texture-scale-display" style="font-size: 12px; color: rgba(0, 0, 0, 0.6); font-weight: 500; background: rgba(255, 255, 255, 0.3); padding: 2px 8px; border-radius: 8px;">5.0x</span>
-        </div>
-        <input 
-            type="range" 
-            id="tiling-scale-slider" 
-            min="0.1" 
-            max="5.0" 
-            step="0.1" 
-            value="5.0" 
-            style="
-                width: 100%; 
-                height: 6px;
-                background: rgba(255, 255, 255, 0.3);
-                border-radius: 3px;
-                outline: none;
-                cursor: pointer;
-                -webkit-appearance: none;
-                appearance: none;
-            "
-        />
-    </div>
+
     
     <!-- AR Button Section -->
     <div>
@@ -201,7 +173,7 @@
     const params = new URLSearchParams(window.location.search);
     const glbSrc = params.get('glb');
 
-    let currentTextureScale = 5.0;
+    const currentTextureScale = 10.0; // Fixed optimal scale
 
     // Load initial model if provided
     if (glbSrc) {
@@ -254,11 +226,6 @@
             setTextureScale(material.pbrMetallicRoughness.metallicRoughnessTexture, currentTextureScale);
             setTextureScale(material.occlusionTexture, currentTextureScale);
         });
-        
-        const scaleDisplay = document.getElementById('texture-scale-display');
-        if (scaleDisplay) {
-            scaleDisplay.textContent = `${currentTextureScale.toFixed(1)}`;
-        }
     }
     
     function updateTextureScale() { updateAllMaterialScales(); }
@@ -296,15 +263,6 @@
                 
                 console.log(`Cleared textures for material ${index}`);
             });
-            
-            // Reset texture scale to original
-            currentTextureScale = 5.0;
-            const slider = document.getElementById('tiling-scale-slider');
-            if (slider) slider.value = '5.0';
-            
-            // Update scale display
-            const scaleDisplay = document.getElementById('texture-scale-display');
-            if (scaleDisplay) scaleDisplay.textContent = '5.0';
             
             console.log('Successfully reverted to original materials');
             
@@ -494,14 +452,6 @@
             swatchContainer.appendChild(fabricSwatch);
             swatchContainer.appendChild(tooltip);
             fabricControls.appendChild(swatchContainer);
-        }
-        
-        const tilingSlider = document.getElementById('tiling-scale-slider');
-        if (tilingSlider) {
-            tilingSlider.addEventListener('input', (e) => {
-                currentTextureScale = parseFloat(e.target.value);
-                updateTextureScale();
-            });
         }
     }
 
