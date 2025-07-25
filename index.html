@@ -44,9 +44,9 @@
 
   <div id="material-controls" style="padding: 16px; background-color: #f9f9f9; border-top: 1px solid #ddd; font-family: Arial, sans-serif;">
     <div style="display: flex; align-items: center; gap: 24px; flex-wrap: wrap;">
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <span style="font-size: 14px; font-weight: 500; color: #555;">Choose a Fabric:</span>
-            <div id="fabric-controls" style="display: flex; gap: 8px;"></div>
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <span style="font-size: 14px; font-weight: 500; color: #555;">Materials:</span>
+            <div id="fabric-controls" style="display: flex; gap: 12px; align-items: center;"></div>
         </div>
         <div style="display: flex; align-items: center; gap: 12px;">
             <span style="font-size: 14px; font-weight: 500; color: #555;">Tiling Scale:</span>
@@ -64,18 +64,19 @@
     const params = new URLSearchParams(window.location.search);
     const glbSrc = params.get('glb');
 
+    let currentTextureScale = 1.0;
+
+    // Load initial model if provided
     if (glbSrc) {
         modelViewer.src = glbSrc;
     }
 
+    // Clean up URL without refreshing
     window.history.replaceState(
-    {}, 
-    document.title, 
-    window.location.pathname
-  );
-
-    let currentTextureScale = 1.0;
-    const textureCache = {};
+        {}, 
+        document.title, 
+        window.location.pathname
+    );
 
     const fabricSets = {
         'leather': {
@@ -92,11 +93,11 @@
         }
     };
 
-    function applyPBRTextureSet(material, cachedTextures) {
-        if (cachedTextures.color) material.pbrMetallicRoughness.baseColorTexture.setTexture(cachedTextures.color);
-        if (cachedTextures.normal) material.normalTexture.setTexture(cachedTextures.normal);
-        if (cachedTextures.roughness) material.pbrMetallicRoughness.metallicRoughnessTexture.setTexture(cachedTextures.roughness);
-        if (cachedTextures.ao) material.occlusionTexture.setTexture(cachedTextures.ao);
+    function applyPBRTextureSet(material, textures) {
+        if (textures.color) material.pbrMetallicRoughness.baseColorTexture.setTexture(textures.color);
+        if (textures.normal) material.normalTexture.setTexture(textures.normal);
+        if (textures.roughness) material.pbrMetallicRoughness.metallicRoughnessTexture.setTexture(textures.roughness);
+        if (textures.ao) material.occlusionTexture.setTexture(textures.ao);
         
         updateAllMaterialScales();
     }
@@ -135,23 +136,122 @@
 
         for (const key in fabricSets) {
             const fabricSet = fabricSets[key];
-            const fabricBtn = document.createElement('button');
-            fabricBtn.innerText = fabricSet.name;
-            fabricBtn.style.cssText = `padding: 8px 14px; border: 2px solid #ddd; border-radius: 20px; background-color: #fff; cursor: pointer;`;
             
-            fabricBtn.onclick = () => {
-                if (textureCache[key]) {
+            // Create material swatch container
+            const swatchContainer = document.createElement('div');
+            swatchContainer.style.cssText = `position: relative; display: inline-block;`;
+            
+            // Create circular swatch button
+            const fabricSwatch = document.createElement('button');
+            fabricSwatch.style.cssText = `
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                border: 3px solid #ddd;
+                cursor: pointer;
+                background-image: url('${fabricSet.color}');
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                transition: border-color 0.2s ease, transform 0.1s ease;
+                outline: none;
+            `;
+            
+            // Add hover effect
+            fabricSwatch.addEventListener('mouseenter', () => {
+                if (fabricSwatch.style.borderColor !== 'rgb(0, 123, 255)') {
+                    fabricSwatch.style.borderColor = '#999';
+                    fabricSwatch.style.transform = 'scale(1.05)';
+                }
+            });
+            
+            fabricSwatch.addEventListener('mouseleave', () => {
+                if (fabricSwatch.style.borderColor !== 'rgb(0, 123, 255)') {
+                    fabricSwatch.style.borderColor = '#ddd';
+                    fabricSwatch.style.transform = 'scale(1)';
+                }
+            });
+            
+            // Create tooltip
+            const tooltip = document.createElement('div');
+            tooltip.innerText = fabricSet.name;
+            tooltip.style.cssText = `
+                position: absolute;
+                bottom: 65px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 6px 10px;
+                border-radius: 4px;
+                font-size: 12px;
+                white-space: nowrap;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.2s ease;
+                z-index: 1000;
+            `;
+            
+            // Add triangle pointer for tooltip
+            const tooltipArrow = document.createElement('div');
+            tooltipArrow.style.cssText = `
+                position: absolute;
+                top: 100%;
+                left: 50%;
+                transform: translateX(-50%);
+                border-left: 5px solid transparent;
+                border-right: 5px solid transparent;
+                border-top: 5px solid rgba(0, 0, 0, 0.8);
+            `;
+            tooltip.appendChild(tooltipArrow);
+            
+            // Show/hide tooltip on hover
+            swatchContainer.addEventListener('mouseenter', () => {
+                tooltip.style.opacity = '1';
+            });
+            
+            swatchContainer.addEventListener('mouseleave', () => {
+                tooltip.style.opacity = '0';
+            });
+            
+            // Handle click to apply texture
+            fabricSwatch.onclick = async () => {
+                try {
+                    console.log(`Loading textures for: ${fabricSet.name}`);
+                    
+                    // Load textures on-demand
+                    const [color, normal, roughness, ao] = await Promise.all([
+                        modelViewer.createTexture(fabricSet.color),
+                        modelViewer.createTexture(fabricSet.normal),
+                        modelViewer.createTexture(fabricSet.roughness),
+                        fabricSet.ao ? modelViewer.createTexture(fabricSet.ao) : Promise.resolve(null)
+                    ]);
+                    
+                    const textures = { color, normal, roughness, ao };
+                    
+                    // Apply to all materials
                     model.materials.forEach(material => {
-                        applyPBRTextureSet(material, textureCache[key]);
+                        applyPBRTextureSet(material, textures);
                     });
 
-                    fabricControls.querySelectorAll('button').forEach(btn => btn.style.borderColor = '#ddd');
-                    fabricBtn.style.borderColor = '#007bff';
-                } else {
-                    console.log(`Textures for ${fabricSet.name} not cached yet.`);
+                    // Update swatch selection styles
+                    fabricControls.querySelectorAll('button').forEach(btn => {
+                        btn.style.borderColor = '#ddd';
+                        btn.style.transform = 'scale(1)';
+                    });
+                    fabricSwatch.style.borderColor = '#007bff';
+                    fabricSwatch.style.transform = 'scale(1)';
+                    
+                    console.log(`Applied textures for: ${fabricSet.name}`);
+                } catch (error) {
+                    console.error(`Failed to load textures for ${fabricSet.name}:`, error);
                 }
             };
-            fabricControls.appendChild(fabricBtn);
+            
+            // Assemble the swatch
+            swatchContainer.appendChild(fabricSwatch);
+            swatchContainer.appendChild(tooltip);
+            fabricControls.appendChild(swatchContainer);
         }
         
         const tilingSlider = document.getElementById('tiling-scale-slider');
@@ -163,33 +263,15 @@
         }
     }
 
-    modelViewer.addEventListener('load', async () => {
+    modelViewer.addEventListener('load', () => {
         const model = modelViewer.model;
         if (!model) return;
 
-        console.log('Model loaded. Pre-caching all textures...');
-        
-        for (const key in fabricSets) {
-            const textureSet = fabricSets[key];
-            try {
-                const [color, normal, roughness, ao] = await Promise.all([
-                    modelViewer.createTexture(textureSet.color),
-                    modelViewer.createTexture(textureSet.normal),
-                    modelViewer.createTexture(textureSet.roughness),
-                    textureSet.ao ? modelViewer.createTexture(textureSet.ao) : Promise.resolve(null)
-                ]);
-                
-                textureCache[key] = { color, normal, roughness, ao };
-                console.log(`Cached textures for: ${textureSet.name}`);
-            } catch (error) {
-                console.error(`Failed to cache textures for ${textureSet.name}:`, error);
-            }
-        }
-        
-        console.log('All textures cached.');
-        
+        console.log('Model loaded. Setting up material controls...');
         addMaterialControls();
     }, { once: true });
+
+
 
   </script>
 
