@@ -180,6 +180,9 @@
     const params = new URLSearchParams(window.location.search);
     const glbSrc = params.get('glb');
 
+    import { GLTFLoader } from 'https://unpkg.com/three@0.136.0/examples/jsm/loaders/GLTFLoader.js';
+
+
     const currentTextureScale = 10.0; // Fixed optimal scale
 
     // Load initial model if provided
@@ -479,6 +482,12 @@
         }
     });
 
+    modelViewer.addEventListener('load', () => {
+        new GLTFLoader().load(
+          'chair.glb',
+          gltf => mv.scene.add(gltf.scene)
+        );
+      });
 
 
   </script>
