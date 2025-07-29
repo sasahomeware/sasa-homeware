@@ -483,14 +483,21 @@
         }
     });
 
-    modelViewer.addEventListener('load2', () => {
-        new GLTFLoader().load(
-          'https://static.wixstatic.com/3d/62c07e_dbeeef364a0c42ae911deade66aac8a5.glb',
-          gltf => modelViewer.scene.add(gltf.scene)
-        );
+    
+
+
+  </script>
+   <script type="module">
+    import '@google/model-viewer'; 
+    import { GLTFLoader } from 'https://unpkg.com/three@0.136.0/examples/jsm/loaders/GLTFLoader.js';
+
+    const mv = document.querySelector('#main-viewer');
+    mv.addEventListener('load', () => {
+      new GLTFLoader().load(
+        'https://static.wixstatic.com/3d/62c07e_dbeeef364a0c42ae911deade66aac8a5.glb',        // ← your second GLB URL here
+        gltf => mv.scene.add(gltf.scene)
+      );
     });
-
-
   </script>
 
 </body>
