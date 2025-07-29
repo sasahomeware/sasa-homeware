@@ -465,7 +465,7 @@
         }
     }
 
-    modelViewer.addEventListener('load', () => {
+    modelViewer.addEventListener('scene-graph-ready', () => {
         const model = modelViewer.model;
         if (!model) return;
 
