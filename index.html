@@ -465,7 +465,7 @@
         }
     }
 
-    modelViewer.addEventListener('scene-graph-ready', async (event) => {
+    modelViewer.addEventListener('scene-graph-ready',  (event) => {
         const model = modelViewer.model;
         if (!model) return;
 
@@ -473,7 +473,7 @@
         addMaterialControls();
         try {
             const scene = event.target[customElements.get('model-viewer').modelSceneSymbol];
-            const secondaryModel = await scene.loadModel('./chair.glb');
+            const secondaryModel = scene.loadModel('./chair.glb');
             secondaryModel.position.set(1.5, 0, -0.5);
             console.log('✅ Successfully loaded and added the secondary model to the scene.');
         } catch (error) {
