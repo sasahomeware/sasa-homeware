@@ -4,7 +4,6 @@
   <title>SASA Interiors AR Viewer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
-  <script type="module" src="https://unpkg.com/three@0.136.0/examples/jsm/loaders/GLTFLoader.js"></script>
   <style>
     html, body {
       margin: 0;
@@ -483,22 +482,37 @@
         }
     });
 
-    
+    </script>
+    <script type="module">
+        import '@google/model-viewer';
+        import * as THREE from 'https://unpkg.com/three@0.136.0/build/three.module.js';
+        import { GLTFLoader } from 'https://unpkg.com/three@0.136.0/examples/jsm/loaders/GLTFLoader.js';
 
+        const mv = document.querySelector('#main-viewer');
+        mv.addEventListener('load', () => {
+        // offset so they don’t overlap
+        const offset = new THREE.Vector3(0.5, 0, 0);
 
-  </script>
-   <script type="module">
-    import '@google/model-viewer'; 
-    import { GLTFLoader } from 'https://unpkg.com/three@0.136.0/examples/jsm/loaders/GLTFLoader.js';
-
-    const mv = document.querySelector('#main-viewer');
-    mv.addEventListener('load', () => {
-      new GLTFLoader().load(
-        'https://static.wixstatic.com/3d/62c07e_dbeeef364a0c42ae911deade66aac8a5.glb',        // ← your second GLB URL here
-        gltf => mv.scene.add(gltf.scene)
-      );
-    });
-  </script>
+        new GLTFLoader().load(
+            'https://static.wixstatic.com/3d/62c07e_dbeeef364a0c42ae911deade66aac8a5.glb',            // ← your second GLB
+            gltf => {
+            const mdl = gltf.scene;
+            mdl.position.copy(offset);
+            // preserve PBR/shadows
+            mdl.traverse(n => {
+                if (n.isMesh) {
+                n.castShadow = n.receiveShadow = true;
+                n.material.envMapIntensity = 1;
+                }
+            });
+            mv.scene.add(mdl);
+            mv.requestUpdate();         // trigger a new render
+            },
+            undefined,
+            err => console.error(err)
+        );
+        });
+    </script>
 
 </body>
 </html>
