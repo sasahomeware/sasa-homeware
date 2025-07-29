@@ -465,23 +465,17 @@
         }
     }
 
-    modelViewer.addEventListener('scene-graph-ready', () => {
+    modelViewer.addEventListener('scene-graph-ready', async (event) => {
         const model = modelViewer.model;
         if (!model) return;
 
         console.log('Model loaded. Setting up material controls...');
         addMaterialControls();
         try {
-            // ✅ Use the built-in model loader.
-            // ❗ IMPORTANT: Make sure this file exists in the same folder as your HTML.
-            const secondaryModel = modelViewer.scene.loadModel('./chair.glb');
-            
-            // Position the new model in the scene so it doesn't overlap with the first one.
-            // You can adjust these x, y, and z values.
+            const scene = event.target[customElements.get('model-viewer').modelSceneSymbol];
+            const secondaryModel = await scene.loadModel('./chair.glb');
             secondaryModel.position.set(1.5, 0, -0.5);
-
             console.log('✅ Successfully loaded and added the secondary model to the scene.');
-
         } catch (error) {
             console.error('❌ Failed to load the secondary model:', error);
         }
