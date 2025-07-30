@@ -465,20 +465,12 @@
         }
     }
 
-    modelViewer.addEventListener('scene-graph-ready',  (event) => {
+    modelViewer.addEventListener('load', () => {
         const model = modelViewer.model;
         if (!model) return;
 
         console.log('Model loaded. Setting up material controls...');
         addMaterialControls();
-        try {
-            const scene = event.target[customElements.get('model-viewer').modelSceneSymbol];
-            const secondaryModel = scene.loadModel('./chair.glb');
-            secondaryModel.position.set(1.5, 0, -0.5);
-            console.log('✅ Successfully loaded and added the secondary model to the scene.');
-        } catch (error) {
-            console.error('❌ Failed to load the secondary model:', error);
-        }
     }, { once: true });
 
     // Ensure AR scaling is disabled
