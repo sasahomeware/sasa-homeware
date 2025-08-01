@@ -37,6 +37,23 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
     
+    /* Color picker cross-browser styling */
+    #color-picker::-webkit-color-swatch-wrapper {
+      padding: 0;
+      border-radius: 50%;
+      border: 3px solid #ddd;
+    }
+    
+    #color-picker::-webkit-color-swatch {
+      border: none;
+      border-radius: 50%;
+    }
+    
+    #color-picker::-moz-color-swatch {
+      border: none;
+      border-radius: 50%;
+    }
+    
     #material-controls::before {
       content: '';
       position: absolute;
@@ -100,6 +117,11 @@
         height: 35px !important;
       }
       
+      #color-picker {
+        width: 35px !important;
+        height: 35px !important;
+      }
+      
       #ar-button {
         padding: 10px 12px !important;
         font-size: 12px !important;
@@ -149,6 +171,57 @@
             <span style="font-size: 14px; font-weight: 600; color: rgba(0, 0, 0, 0.8);">Materials</span>
         </div>
         <div id="fabric-controls" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;"></div>
+    </div>
+    
+    <!-- Color Picker Section -->
+    <div style="margin-bottom: 20px;">
+        <div style="margin-bottom: 12px;">
+            <span style="font-size: 14px; font-weight: 600; color: rgba(0, 0, 0, 0.8);">Custom Color</span>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <div id="color-picker-container" style="position: relative; display: inline-block;">
+                <input type="color" id="color-picker" value="#8B4513" style="
+                    width: 50px;
+                    height: 50px;
+                    border-radius: 50%;
+                    border: 3px solid #ddd;
+                    cursor: pointer;
+                    outline: none;
+                    -webkit-appearance: none;
+                    -moz-appearance: none;
+                    appearance: none;
+                    background: none;
+                    transition: border-color 0.2s ease, transform 0.1s ease;
+                ">
+                <div id="color-tooltip" style="
+                    position: absolute;
+                    bottom: 65px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: rgba(0, 0, 0, 0.8);
+                    color: white;
+                    padding: 6px 10px;
+                    border-radius: 4px;
+                    font-size: 12px;
+                    white-space: nowrap;
+                    opacity: 0;
+                    pointer-events: none;
+                    transition: opacity 0.2s ease;
+                    z-index: 1000;
+                ">
+                    Choose Color
+                    <div style="
+                        position: absolute;
+                        top: 100%;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        border-left: 5px solid transparent;
+                        border-right: 5px solid transparent;
+                        border-top: 5px solid rgba(0, 0, 0, 0.8);
+                    "></div>
+                </div>
+            </div>
+        </div>
     </div>
     
 
@@ -271,6 +344,9 @@
                     material.occlusionTexture.setTexture(null);
                 }
                 
+                // Reset base color factor to default
+                material.pbrMetallicRoughness.setBaseColorFactor([1, 1, 1, 1]);
+                
                 console.log(`Cleared textures for material ${index}`);
             });
             
@@ -278,6 +354,76 @@
             
         } catch (error) {
             console.error('Error reverting to original materials:', error);
+        }
+    }
+
+    // Apply solid color to all materials
+    function applyColorToMaterials(hexColor) {
+        const model = modelViewer.model;
+        if (!model) {
+            console.warn('No model available to apply color');
+            return;
+        }
+        
+        console.log(`Applying color ${hexColor} to materials...`);
+        
+        try {
+            // Convert hex to RGB values (0-1 range)
+            const hex = hexColor.replace('#', '');
+            const r = parseInt(hex.substr(0, 2), 16) / 255;
+            const g = parseInt(hex.substr(2, 2), 16) / 255;
+            const b = parseInt(hex.substr(4, 2), 16) / 255;
+            
+            model.materials.forEach((material, index) => {
+                // Clear any applied textures first
+                if (material.pbrMetallicRoughness?.baseColorTexture) {
+                    material.pbrMetallicRoughness.baseColorTexture.setTexture(null);
+                }
+                
+                if (material.normalTexture) {
+                    material.normalTexture.setTexture(null);
+                }
+                
+                if (material.pbrMetallicRoughness?.metallicRoughnessTexture) {
+                    material.pbrMetallicRoughness.metallicRoughnessTexture.setTexture(null);
+                }
+                
+                if (material.occlusionTexture) {
+                    material.occlusionTexture.setTexture(null);
+                }
+                
+                // Apply the new color
+                material.pbrMetallicRoughness.setBaseColorFactor([r, g, b, 1]);
+                
+                console.log(`Applied color to material ${index}: rgba(${r}, ${g}, ${b}, 1)`);
+            });
+            
+            console.log('Successfully applied color to all materials');
+            
+        } catch (error) {
+            console.error('Error applying color to materials:', error);
+        }
+    }
+
+    // Update selection state for all controls
+    function updateSelectionState(selectedElement, isColorPicker = false) {
+        const fabricControls = document.getElementById('fabric-controls');
+        const colorPicker = document.getElementById('color-picker');
+        
+        // Reset all fabric swatches
+        fabricControls.querySelectorAll('button').forEach(btn => {
+            btn.style.borderColor = '#ddd';
+            btn.style.transform = 'scale(1)';
+        });
+        
+        // Reset color picker
+        colorPicker.style.borderColor = '#ddd';
+        colorPicker.style.transform = 'scale(1)';
+        
+        // Highlight selected element
+        if (selectedElement) {
+            selectedElement.style.borderColor = '#007bff';
+            selectedElement.style.transform = 'scale(1)';
         }
     }
 
@@ -416,7 +562,7 @@
                 tooltip.style.opacity = '0';
             });
             
-            // Handle click to apply texture or revert to original
+                                // Handle click to apply texture or revert to original
             fabricSwatch.onclick = async () => {
                 try {
                     if (fabricSet.isOriginal) {
@@ -445,13 +591,8 @@
                         console.log(`Applied textures for: ${fabricSet.name}`);
                     }
 
-                    // Update swatch selection styles
-                    fabricControls.querySelectorAll('button').forEach(btn => {
-                        btn.style.borderColor = '#ddd';
-                        btn.style.transform = 'scale(1)';
-                    });
-                    fabricSwatch.style.borderColor = '#007bff';
-                    fabricSwatch.style.transform = 'scale(1)';
+                    // Update selection state
+                    updateSelectionState(fabricSwatch);
                     
                 } catch (error) {
                     console.error(`Failed to process material ${fabricSet.name}:`, error);
@@ -471,7 +612,64 @@
 
         console.log('Model loaded. Setting up material controls...');
         addMaterialControls();
+        setupColorPicker();
     }, { once: true });
+
+    // Setup color picker functionality
+    function setupColorPicker() {
+        const colorPicker = document.getElementById('color-picker');
+        const colorTooltip = document.getElementById('color-tooltip');
+        const colorPickerContainer = document.getElementById('color-picker-container');
+        
+        if (!colorPicker) return;
+        
+        // Handle color change
+        colorPicker.addEventListener('change', (event) => {
+            const selectedColor = event.target.value;
+            console.log(`Color picker changed to: ${selectedColor}`);
+            
+            // Apply color to model
+            applyColorToMaterials(selectedColor);
+            
+            // Update selection state
+            updateSelectionState(colorPicker, true);
+        });
+        
+        // Handle input event for real-time updates (optional)
+        colorPicker.addEventListener('input', (event) => {
+            const selectedColor = event.target.value;
+            
+            // Apply color to model in real-time
+            applyColorToMaterials(selectedColor);
+            
+            // Update selection state
+            updateSelectionState(colorPicker, true);
+        });
+        
+        // Show/hide tooltip on hover
+        colorPickerContainer.addEventListener('mouseenter', () => {
+            colorTooltip.style.opacity = '1';
+        });
+        
+        colorPickerContainer.addEventListener('mouseleave', () => {
+            colorTooltip.style.opacity = '0';
+        });
+        
+        // Add hover effects
+        colorPicker.addEventListener('mouseenter', () => {
+            if (colorPicker.style.borderColor !== 'rgb(0, 123, 255)') {
+                colorPicker.style.borderColor = '#999';
+                colorPicker.style.transform = 'scale(1.05)';
+            }
+        });
+        
+        colorPicker.addEventListener('mouseleave', () => {
+            if (colorPicker.style.borderColor !== 'rgb(0, 123, 255)') {
+                colorPicker.style.borderColor = '#ddd';
+                colorPicker.style.transform = 'scale(1)';
+            }
+        });
+    }
 
     // Ensure AR scaling is disabled
     modelViewer.addEventListener('ar-status', (event) => {
