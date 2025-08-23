@@ -15,63 +15,6 @@
       background-color: #ffffff;
     }
     
-    #tiling-scale-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: #007bff;
-      cursor: pointer;
-      border: 2px solid white;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-    
-    #tiling-scale-slider::-moz-range-thumb {
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: #007bff;
-      cursor: pointer;
-      border: 2px solid white;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-    
-    /* Color picker cross-browser styling */
-    #color-picker::-webkit-color-swatch-wrapper {
-      padding: 0;
-      border-radius: 50%;
-      border: 3px solid #ddd;
-    }
-    
-    #color-picker::-webkit-color-swatch {
-      border: none;
-      border-radius: 50%;
-    }
-    
-    #color-picker::-moz-color-swatch {
-      border: none;
-      border-radius: 50%;
-    }
-    
-    #material-controls::before {
-      content: '';
-      position: absolute;
-      top: -10px;
-      left: -10px;
-      right: -10px;
-      bottom: -10px;
-      background: linear-gradient(135deg, 
-        rgba(107, 114, 128, 0.4) 0%, 
-        rgba(107, 114, 128, 0.4) 25%, 
-        rgba(107, 114, 128, 0.4) 75%, 
-        rgba(107, 114, 128, 0.4) 100%);
-      border-radius: 24px;
-      filter: blur(35px);
-      z-index: -1;
-      opacity: 0.8;
-    }
-    
     /* Hide AR button on desktop, show only on mobile */
     #ar-button {
       display: none;
@@ -89,42 +32,20 @@
       }
     }
     
-    /* Mobile responsive sizing for glass panel */
-    @media (max-width: 768px) {
-      #material-controls {
-        min-width: 25vw !important;
-        max-width: 25vw !important;
-        max-height: 30vh !important;
-        padding: 12px !important;
-        top: 15px !important;
-        right: 15px !important;
-      }
-      
-      #material-controls > div {
-        margin-bottom: 12px !important;
-      }
-      
-      #material-controls > div:last-child {
-        margin-bottom: 0 !important;
-      }
-      
-      #fabric-controls {
-        gap: 8px !important;
-      }
-      
-      #fabric-controls button {
-        width: 35px !important;
-        height: 35px !important;
-      }
-      
-      #color-picker {
-        width: 35px !important;
-        height: 35px !important;
-      }
-      
+    /* Glassmorphic button (no orb) */
+    #ar-button { position: relative; overflow: visible; }
+    
+    /* Mobile-specific button sizing */
+    @media (max-width: 450px) {
       #ar-button {
-        padding: 10px 12px !important;
-        font-size: 12px !important;
+        padding: 1px 10px !important;
+        font-size: 11px !important;
+        line-height: 15 !important;
+        height: 35px !important;
+      }
+      #ar-button img {
+        width: 13px !important;
+        height: 50px !important;
       }
     }
   </style>
@@ -148,115 +69,30 @@
       style="width: 100vw; height: 100vh; margin: 0; padding: 0; display: block; background-color: #ffffff;">
   </model-viewer>
 
-  <!-- Floating Frosted Glass Material Controls Panel -->
-  <div id="material-controls" style="
+  <button id="ar-button" onclick="modelViewer.activateAR()" style="
     position: fixed;
     top: 20px;
     right: 20px;
-    background: rgba(255, 255, 255, 0.3);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    padding: 20px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
     z-index: 1000;
-    min-width: 280px;
-    max-width: 320px;
-    user-select: none;
-  ">
-    <!-- Materials Section -->
-    <div style="margin-bottom: 20px;">
-        <div style="margin-bottom: 12px;">
-            <span style="font-size: 14px; font-weight: 600; color: rgba(0, 0, 0, 0.8);">Materials</span>
-        </div>
-        <div id="fabric-controls" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;"></div>
-    </div>
-    
-    <!-- Color Picker Section -->
-    <div style="margin-bottom: 20px;">
-        <div style="margin-bottom: 12px;">
-            <span style="font-size: 14px; font-weight: 600; color: rgba(0, 0, 0, 0.8);">Custom Color</span>
-        </div>
-        <div style="display: flex; gap: 12px; align-items: center;">
-            <div id="color-picker-container" style="position: relative; display: inline-block;">
-                <input type="color" id="color-picker" value="#8B4513" style="
-                    width: 50px;
-                    height: 50px;
-                    border-radius: 50%;
-                    border: 3px solid #ddd;
-                    cursor: pointer;
-                    outline: none;
-                    -webkit-appearance: none;
-                    -moz-appearance: none;
-                    appearance: none;
-                    background: none;
-                    transition: border-color 0.2s ease, transform 0.1s ease;
-                ">
-                <div id="color-tooltip" style="
-                    position: absolute;
-                    bottom: 65px;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    background: rgba(0, 0, 0, 0.8);
-                    color: white;
-                    padding: 6px 10px;
-                    border-radius: 4px;
-                    font-size: 12px;
-                    white-space: nowrap;
-                    opacity: 0;
-                    pointer-events: none;
-                    transition: opacity 0.2s ease;
-                    z-index: 1000;
-                ">
-                    Choose Color
-                    <div style="
-                        position: absolute;
-                        top: 100%;
-                        left: 50%;
-                        transform: translateX(-50%);
-                        border-left: 5px solid transparent;
-                        border-right: 5px solid transparent;
-                        border-top: 5px solid rgba(0, 0, 0, 0.8);
-                    "></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-
-    
-    <!-- AR Button Section -->
-    <div>
-        <button id="ar-button" onclick="modelViewer.activateAR()" style="
-            width: 100%;
-            background: rgba(255, 255, 255, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            border-radius: 12px;
-            padding: 14px 20px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            color: rgba(0, 0, 0, 0.8);
-            transition: all 0.2s ease;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        " onmouseover="this.style.background='rgba(255, 255, 255, 0.5)'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.4)'; this.style.transform='translateY(0)'">
-            📱 View in your room
-        </button>
-    </div>
-  </div>
+    background: linear-gradient(135deg, rgba(0,0,0,0.06) 0%, rgba(255,255,255,0.96) 60%, rgba(255,255,255,1) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 35px;
+    padding: 2px 2px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.85);
+    transition: background 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 -1px 0 rgba(0, 0, 0, 0.06);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  " onmouseover="this.style.background='white'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.9)'; this.style.transform='translateY(0)'"><img src="./ar-cube.svg" alt="" style="width:50px;height:50px;vertical-align:middle;margin-right:0px" /><span>View in your room</span></button>
 
   <script>
     const modelViewer = document.querySelector('#main-viewer');
     const params = new URLSearchParams(window.location.search);
     const glbSrc = params.get('glb');
-
-    
-
-
-    const currentTextureScale = 10.0; // Fixed optimal scale
 
     // Load initial model if provided
     if (glbSrc) {
@@ -270,407 +106,6 @@
         window.location.pathname
     );
 
-    const fabricSets = {
-        'original': {
-            name: 'Original',
-            isOriginal: true, // Special flag for original material
-        },
-        'leather': {
-            name: 'Brown Leather',
-            color: './Leather037_2K-PNG_Color.png',
-            normal: './Leather037_2K-PNG_NormalGL.png',
-            roughness: './Leather037_2K-PNG_Roughness.png',
-            swatch: './Leather037.png', // Better for small circular preview
-        }
-    };
-
-    function applyPBRTextureSet(material, textures) {
-        if (textures.color) material.pbrMetallicRoughness.baseColorTexture.setTexture(textures.color);
-        if (textures.normal) material.normalTexture.setTexture(textures.normal);
-        if (textures.roughness) material.pbrMetallicRoughness.metallicRoughnessTexture.setTexture(textures.roughness);
-        if (textures.ao) material.occlusionTexture.setTexture(textures.ao);
-        
-        updateAllMaterialScales();
-    }
-
-    function setTextureScale(textureInfo, scale) {
-        if (textureInfo && textureInfo.texture && textureInfo.texture.sampler) {
-            textureInfo.texture.sampler.setScale({ u: scale, v: scale });
-        }
-    }
-
-    function updateAllMaterialScales() {
-        const model = modelViewer.model;
-        if (!model) return;
-        
-        model.materials.forEach(material => {
-            setTextureScale(material.pbrMetallicRoughness.baseColorTexture, currentTextureScale);
-            setTextureScale(material.normalTexture, currentTextureScale);
-            setTextureScale(material.pbrMetallicRoughness.metallicRoughnessTexture, currentTextureScale);
-            setTextureScale(material.occlusionTexture, currentTextureScale);
-        });
-    }
-    
-    function updateTextureScale() { updateAllMaterialScales(); }
-
-
-
-    // Clear all applied textures to revert to original appearance
-    function restoreOriginalMaterials() {
-        const model = modelViewer.model;
-        if (!model) {
-            console.warn('No model available to restore');
-            return;
-        }
-        
-        console.log('Reverting to original materials by clearing applied textures...');
-        
-        try {
-            model.materials.forEach((material, index) => {
-                // Clear all applied custom textures to revert to original
-                if (material.pbrMetallicRoughness?.baseColorTexture) {
-                    material.pbrMetallicRoughness.baseColorTexture.setTexture(null);
-                }
-                
-                if (material.normalTexture) {
-                    material.normalTexture.setTexture(null);
-                }
-                
-                if (material.pbrMetallicRoughness?.metallicRoughnessTexture) {
-                    material.pbrMetallicRoughness.metallicRoughnessTexture.setTexture(null);
-                }
-                
-                if (material.occlusionTexture) {
-                    material.occlusionTexture.setTexture(null);
-                }
-                
-                // Reset base color factor to default
-                material.pbrMetallicRoughness.setBaseColorFactor([1, 1, 1, 1]);
-                
-                console.log(`Cleared textures for material ${index}`);
-            });
-            
-            console.log('Successfully reverted to original materials');
-            
-        } catch (error) {
-            console.error('Error reverting to original materials:', error);
-        }
-    }
-
-    // Apply solid color to all materials
-    function applyColorToMaterials(hexColor) {
-        const model = modelViewer.model;
-        if (!model) {
-            console.warn('No model available to apply color');
-            return;
-        }
-        
-        console.log(`Applying color ${hexColor} to materials...`);
-        
-        try {
-            // Convert hex to RGB values (0-1 range)
-            const hex = hexColor.replace('#', '');
-            const r = parseInt(hex.substr(0, 2), 16) / 255;
-            const g = parseInt(hex.substr(2, 2), 16) / 255;
-            const b = parseInt(hex.substr(4, 2), 16) / 255;
-            
-            model.materials.forEach((material, index) => {
-                // Clear any applied textures first
-                if (material.pbrMetallicRoughness?.baseColorTexture) {
-                    material.pbrMetallicRoughness.baseColorTexture.setTexture(null);
-                }
-                
-                if (material.normalTexture) {
-                    material.normalTexture.setTexture(null);
-                }
-                
-                if (material.pbrMetallicRoughness?.metallicRoughnessTexture) {
-                    material.pbrMetallicRoughness.metallicRoughnessTexture.setTexture(null);
-                }
-                
-                if (material.occlusionTexture) {
-                    material.occlusionTexture.setTexture(null);
-                }
-                
-                // Apply the new color
-                material.pbrMetallicRoughness.setBaseColorFactor([r, g, b, 1]);
-                
-                console.log(`Applied color to material ${index}: rgba(${r}, ${g}, ${b}, 1)`);
-            });
-            
-            console.log('Successfully applied color to all materials');
-            
-        } catch (error) {
-            console.error('Error applying color to materials:', error);
-        }
-    }
-
-    // Update selection state for all controls
-    function updateSelectionState(selectedElement, isColorPicker = false) {
-        const fabricControls = document.getElementById('fabric-controls');
-        const colorPicker = document.getElementById('color-picker');
-        
-        // Reset all fabric swatches
-        fabricControls.querySelectorAll('button').forEach(btn => {
-            btn.style.borderColor = '#ddd';
-            btn.style.transform = 'scale(1)';
-        });
-        
-        // Reset color picker
-        colorPicker.style.borderColor = '#ddd';
-        colorPicker.style.transform = 'scale(1)';
-        
-        // Highlight selected element
-        if (selectedElement) {
-            selectedElement.style.borderColor = '#007bff';
-            selectedElement.style.transform = 'scale(1)';
-        }
-    }
-
-    function addMaterialControls() {
-        const model = modelViewer.model;
-        if (!model) return;
-
-        const fabricControls = document.getElementById('fabric-controls');
-        fabricControls.innerHTML = '';
-
-                for (const key in fabricSets) {
-            const fabricSet = fabricSets[key];
-            
-            // Create material swatch container
-            const swatchContainer = document.createElement('div');
-            swatchContainer.style.cssText = `position: relative; display: inline-block;`;
-            
-            // Create circular swatch button
-            const fabricSwatch = document.createElement('button');
-            
-            if (fabricSet.isOriginal) {
-                // Special styling for original/default swatch
-                fabricSwatch.style.cssText = `
-                    width: 50px;
-                    height: 50px;
-                    border-radius: 50%;
-                    border: 3px solid #ddd;
-                    cursor: pointer;
-                    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%, #dee2e6 100%);
-                    transition: border-color 0.2s ease, transform 0.1s ease;
-                    outline: none;
-                    overflow: hidden;
-                    position: relative;
-                `;
-                
-                // Add a reset icon or text to indicate original
-                const originalIcon = document.createElement('div');
-                originalIcon.innerHTML = '↺';
-                originalIcon.style.cssText = `
-                    position: absolute;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    font-size: 18px;
-                    color: #666;
-                    font-weight: bold;
-                `;
-                fabricSwatch.appendChild(originalIcon);
-            } else {
-                // Use dedicated swatch image if available, otherwise use color texture
-                const swatchImage = fabricSet.swatch || fabricSet.color;
-                
-                fabricSwatch.style.cssText = `
-                    width: 50px;
-                    height: 50px;
-                    border-radius: 50%;
-                    border: 3px solid #ddd;
-                    cursor: pointer;
-                    background-image: url('${swatchImage}');
-                    background-size: cover;
-                    background-position: center;
-                    background-repeat: no-repeat;
-                    transition: border-color 0.2s ease, transform 0.1s ease;
-                    outline: none;
-                    overflow: hidden;
-                `;
-                
-                // Ensure the texture image loads properly
-                const textureImg = new Image();
-                textureImg.onload = () => {
-                    console.log(`Swatch texture loaded for: ${fabricSet.name}`);
-                };
-                textureImg.onerror = () => {
-                    console.error(`Failed to load swatch texture for: ${fabricSet.name}`);
-                    // Fallback to a solid color if texture fails to load
-                    fabricSwatch.style.backgroundColor = key === 'leather' ? '#8B4513' : '#999';
-                    fabricSwatch.style.backgroundImage = 'none';
-                };
-                textureImg.src = swatchImage;
-            }
-            
-            // Add hover effect
-            fabricSwatch.addEventListener('mouseenter', () => {
-                if (fabricSwatch.style.borderColor !== 'rgb(0, 123, 255)') {
-                    fabricSwatch.style.borderColor = '#999';
-                    fabricSwatch.style.transform = 'scale(1.05)';
-                }
-            });
-            
-            fabricSwatch.addEventListener('mouseleave', () => {
-                if (fabricSwatch.style.borderColor !== 'rgb(0, 123, 255)') {
-                    fabricSwatch.style.borderColor = '#ddd';
-                    fabricSwatch.style.transform = 'scale(1)';
-                }
-            });
-            
-            // Create tooltip
-            const tooltip = document.createElement('div');
-            tooltip.innerText = fabricSet.name;
-            tooltip.style.cssText = `
-                position: absolute;
-                bottom: 65px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: rgba(0, 0, 0, 0.8);
-                color: white;
-                padding: 6px 10px;
-                border-radius: 4px;
-                font-size: 12px;
-                white-space: nowrap;
-                opacity: 0;
-                pointer-events: none;
-                transition: opacity 0.2s ease;
-                z-index: 1000;
-            `;
-            
-            // Add triangle pointer for tooltip
-            const tooltipArrow = document.createElement('div');
-            tooltipArrow.style.cssText = `
-                position: absolute;
-                top: 100%;
-                left: 50%;
-                transform: translateX(-50%);
-                border-left: 5px solid transparent;
-                border-right: 5px solid transparent;
-                border-top: 5px solid rgba(0, 0, 0, 0.8);
-            `;
-            tooltip.appendChild(tooltipArrow);
-            
-            // Show/hide tooltip on hover
-            swatchContainer.addEventListener('mouseenter', () => {
-                tooltip.style.opacity = '1';
-            });
-            
-            swatchContainer.addEventListener('mouseleave', () => {
-                tooltip.style.opacity = '0';
-            });
-            
-                                // Handle click to apply texture or revert to original
-            fabricSwatch.onclick = async () => {
-                try {
-                    if (fabricSet.isOriginal) {
-                        // Revert to original materials without reloading
-                        console.log('Reverting to original material...');
-                        restoreOriginalMaterials();
-                        console.log('Reverted to original material');
-                    } else {
-                        console.log(`Loading textures for: ${fabricSet.name}`);
-                        
-                        // Load textures on-demand
-                        const [color, normal, roughness, ao] = await Promise.all([
-                            modelViewer.createTexture(fabricSet.color),
-                            modelViewer.createTexture(fabricSet.normal),
-                            modelViewer.createTexture(fabricSet.roughness),
-                            fabricSet.ao ? modelViewer.createTexture(fabricSet.ao) : Promise.resolve(null)
-                        ]);
-                        
-                        const textures = { color, normal, roughness, ao };
-                        
-                        // Apply to all materials
-                        model.materials.forEach(material => {
-                            applyPBRTextureSet(material, textures);
-                        });
-                        
-                        console.log(`Applied textures for: ${fabricSet.name}`);
-                    }
-
-                    // Update selection state
-                    updateSelectionState(fabricSwatch);
-                    
-                } catch (error) {
-                    console.error(`Failed to process material ${fabricSet.name}:`, error);
-                }
-            };
-            
-            // Assemble the swatch
-            swatchContainer.appendChild(fabricSwatch);
-            swatchContainer.appendChild(tooltip);
-            fabricControls.appendChild(swatchContainer);
-        }
-    }
-
-    modelViewer.addEventListener('load', () => {
-        const model = modelViewer.model;
-        if (!model) return;
-
-        console.log('Model loaded. Setting up material controls...');
-        addMaterialControls();
-        setupColorPicker();
-    }, { once: true });
-
-    // Setup color picker functionality
-    function setupColorPicker() {
-        const colorPicker = document.getElementById('color-picker');
-        const colorTooltip = document.getElementById('color-tooltip');
-        const colorPickerContainer = document.getElementById('color-picker-container');
-        
-        if (!colorPicker) return;
-        
-        // Handle color change
-        colorPicker.addEventListener('change', (event) => {
-            const selectedColor = event.target.value;
-            console.log(`Color picker changed to: ${selectedColor}`);
-            
-            // Apply color to model
-            applyColorToMaterials(selectedColor);
-            
-            // Update selection state
-            updateSelectionState(colorPicker, true);
-        });
-        
-        // Handle input event for real-time updates (optional)
-        colorPicker.addEventListener('input', (event) => {
-            const selectedColor = event.target.value;
-            
-            // Apply color to model in real-time
-            applyColorToMaterials(selectedColor);
-            
-            // Update selection state
-            updateSelectionState(colorPicker, true);
-        });
-        
-        // Show/hide tooltip on hover
-        colorPickerContainer.addEventListener('mouseenter', () => {
-            colorTooltip.style.opacity = '1';
-        });
-        
-        colorPickerContainer.addEventListener('mouseleave', () => {
-            colorTooltip.style.opacity = '0';
-        });
-        
-        // Add hover effects
-        colorPicker.addEventListener('mouseenter', () => {
-            if (colorPicker.style.borderColor !== 'rgb(0, 123, 255)') {
-                colorPicker.style.borderColor = '#999';
-                colorPicker.style.transform = 'scale(1.05)';
-            }
-        });
-        
-        colorPicker.addEventListener('mouseleave', () => {
-            if (colorPicker.style.borderColor !== 'rgb(0, 123, 255)') {
-                colorPicker.style.borderColor = '#ddd';
-                colorPicker.style.transform = 'scale(1)';
-            }
-        });
-    }
-
     // Ensure AR scaling is disabled
     modelViewer.addEventListener('ar-status', (event) => {
         if (event.detail.status === 'session-started') {
@@ -680,6 +115,8 @@
         }
     });
 
+    // No orb underlay/scripts needed
+    
     </script>
 
 </body>
