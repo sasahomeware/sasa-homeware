@@ -19,16 +19,18 @@
     #ar-button {
       display: none;
     }
-    
-    @media (max-width: 768px) {
+
+    /* Show only on touch-enabled mobile devices */
+    @media (hover: none) and (pointer: coarse) {
       #ar-button {
         display: block;
       }
     }
-    
-    @media (hover: none) and (pointer: coarse) {
+
+    /* Additional check: hide on desktop even if screen is small */
+    @media (hover: hover) and (pointer: fine) {
       #ar-button {
-        display: block;
+        display: none !important;
       }
     }
     
